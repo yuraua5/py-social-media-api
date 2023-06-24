@@ -1,3 +1,5 @@
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import viewsets
 
 from social.models import Profile, Post
@@ -46,6 +48,27 @@ class ProfileViewSet(viewsets.ModelViewSet):
 
         return self.serializer_class
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "first_name",
+                type=OpenApiTypes.STR,
+                description="Filter by first_name (ex. ?first_name=John)",
+            ),
+            OpenApiParameter(
+                "last_name",
+                type=OpenApiTypes.STR,
+                description="Filter by last_name (ex. ?last_name=Smith)",
+            ),
+            OpenApiParameter(
+                "gender",
+                type=OpenApiTypes.STR,
+                description="Filter by gender (ex. ?gender=Male)",
+            ),
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
 
 class PostViewSet(viewsets.ModelViewSet):
@@ -79,3 +102,20 @@ class PostViewSet(viewsets.ModelViewSet):
             return PostCreateUpdateSerializer
 
         return self.serializer_class
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "hashtag",
+                type=OpenApiTypes.STR,
+                description="Filter by hashtag (ex. ?hashtag=#hashtag)",
+            ),
+            OpenApiParameter(
+                "title",
+                type=OpenApiTypes.STR,
+                description="Filter by title (ex. ?title=title)",
+            ),
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
