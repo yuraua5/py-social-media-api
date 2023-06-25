@@ -1,6 +1,7 @@
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import viewsets
+from rest_framework.pagination import PageNumberPagination
 
 from social.models import Profile, Post
 from social.permissions import IsPostOwnerOrReadOnly, IsProfileOwnerOrReadOnly
@@ -9,14 +10,24 @@ from social.serializers import (
     PostSerializer,
     ProfileDetailSerializer,
     PostCreateUpdateSerializer,
-    ProfileCreateUpdateSerializer
+    ProfileCreateUpdateSerializer,
 )
 
 
+class Pagination(PageNumberPagination):
+    page_size = 5
+    page_size_query_param = "page_size"
+    max_page_size = 30
+
+
 class ProfileViewSet(viewsets.ModelViewSet):
-    queryset = Profile.objects.all()
+    queryset = Profile.objects.all().prefetch_related(
+        "user__followers",
+        "posts",
+    )
     serializer_class = ProfileSerializer
     permission_classes = [IsProfileOwnerOrReadOnly]
+    pagination_class = Pagination
 
     def get_queryset(self):
         first_name = self.request.query_params.get("first_name")
@@ -75,6 +86,7 @@ class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
     permission_classes = [IsPostOwnerOrReadOnly]
+    pagination_class = Pagination
 
     def get_queryset(self):
         hashtag = self.request.query_params.get("hashtag")
